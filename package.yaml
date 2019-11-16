@@ -1,0 +1,29 @@
+---
+name: "ansible-runner"
+author: "Jonathan Strickland"
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - bytestring
+  - typed-process
+  - lens
+  - transformers
+  - containers
+  - co-log-core
+  - time
+
+library:
+  source-dirs:
+    - src/
+
+default-extensions:
+  - OverloadedStrings
+  - NamedFieldPuns
+  - InstanceSigs
+  - FlexibleInstances
+  - TypeFamilies
+  - GADTs
+  - KindSignatures
+  - DataKinds
+  - ViewPatterns
