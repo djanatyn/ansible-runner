@@ -22,7 +22,7 @@ import qualified Data.Text as T
 type Pattern = T.Text
 
 -- | An `Inventory` is specified by a filepath.
-newtype Inventory = Inventory T.Text
+data Inventory = Inventory T.Text | Localhost
 
 -- | Ansible runs against exactly one `Inventory` each invocation.
 newtype Config = Config {ansibleInventory :: Inventory}

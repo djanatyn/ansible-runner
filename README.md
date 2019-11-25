@@ -6,3 +6,9 @@ built with:
 * [stack](https://docs.haskellstack.org/en/stable/README/)
 * [typed-process](http://hackage.haskell.org/package/typed-process)
 * [colog-core](http://hackage.haskell.org/package/co-log-core)
+
+``` haskell
+>>> :t runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
+runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
+  :: IO AdhocOutput
+```

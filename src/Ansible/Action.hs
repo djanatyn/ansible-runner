@@ -49,13 +49,16 @@ ansibleEnv = do
 -- | Construct `ProcessConfig` for Ansible adhoc command.
 ansibleProc :: Pattern -> AnsibleCmd -> Ansible (ProcessConfig () () ())
 ansibleProc ansiblePattern cmd@AnsibleCmd {ansibleModule = (Module m)} = do
-  (Inventory path) <- asks ansibleInventory
+  inv <- inventoryCmdline <$> asks ansibleInventory
   return $ proc "ansible" $
-    T.unpack <$> ["-i", path, "-m", m] ++ args cmd ++ [ansiblePattern]
+    T.unpack <$> inv ++ ["-m", m] ++ args cmd ++ [ansiblePattern]
   where
     args :: AnsibleCmd -> [T.Text]
     args (ansibleArgs -> Just a) = ["-a", a]
     args _ = []
+    inventoryCmdline :: Inventory -> [T.Text]
+    inventoryCmdline (Inventory path) = ["-i", path]
+    inventoryCmdline Localhost = []
 
 -- | Run `Ansible` action. An `Ansible` action needs an inventory to run against.
 runAnsible :: Config -> Ansible a -> IO a

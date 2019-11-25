@@ -1,6 +1,7 @@
 module Main where
 
-import Ansible.Types (AnsibleCmd (..), Module (..))
+import Ansible.Action
+import Ansible.Types
 import Data.Text (Text)
 
 -- | Run ping module.
