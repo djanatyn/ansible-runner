@@ -8,7 +8,9 @@ built with:
 * [colog-core](http://hackage.haskell.org/package/co-log-core)
 
 ``` haskell
->>> :t runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
-runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
-  :: IO AdhocOutput
+>>> :t runAdhoc (shell "uname -a") "localhost"
+runAdhoc (shell "uname -a") "localhost" :: Ansible AdhocOutput
+>>> :t adhocOutput <$> runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
+adhocOutput <$> runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
+  :: IO BL.ByteString
 ```
