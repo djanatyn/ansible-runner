@@ -24,30 +24,28 @@ import qualified Data.Text as T
 import System.Environment (getEnvironment)
 import System.Process.Typed (ProcessConfig, proc, readProcessStdout, setEnv)
 
+type Process = ProcessConfig () () ()
+
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
 runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
 runAdhoc cmd target = do
-  env <- ansibleEnv
-  command <- setEnv env <$> ansibleProc target cmd
+  command <- ansibleProc target cmd >>= ansibleEnv
   logMsg INFO command
   liftIO $ AdhocOutput . snd <$> readProcessStdout command
 
--- | Environment for an `Ansible` adhoc process.
-type Environment = [(String, String)]
-
--- | Construct `Ansible` environment. Sets STDOUT callback.
-ansibleEnv :: Ansible Environment
-ansibleEnv = do
+-- | Set environment for `Ansible Process`.
+ansibleEnv :: Process -> Ansible Process
+ansibleEnv process = do
   currentEnvironment <- liftIO getEnvironment
   let newArgs =
         [ ("ANSIBLE_STDOUT_CALLBACK", "json"),
           ("ANSIBLE_LOAD_CALLBACK_PLUGINS", "TRUE")
         ]
       currentArgs = filter ((`notElem` (fst <$> newArgs)) . fst) currentEnvironment
-   in return $ newArgs ++ currentArgs
+   in return $ setEnv (newArgs ++ currentArgs) process
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
-ansibleProc :: Pattern -> AnsibleCmd -> Ansible (ProcessConfig () () ())
+ansibleProc :: Pattern -> AnsibleCmd -> Ansible Process
 ansibleProc ansiblePattern AnsibleCmd {ansibleArgs, ansibleModule} = do
   inv <- asks ansibleInventory
   return $ proc "ansible" . fmap T.unpack $
