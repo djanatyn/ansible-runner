@@ -28,7 +28,7 @@ runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
 runAdhoc cmd target = do
   process <- ansibleProc target cmd
   env <- ansibleEnv
-  logMsg . T.pack . show $ process
+  logMsg process
   let action = setEnv env process
    in liftIO $ AdhocOutput . snd <$> readProcessStdout action
 

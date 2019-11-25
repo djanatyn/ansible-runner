@@ -8,7 +8,7 @@ module Ansible.Log
 where
 
 import Ansible.Types (Ansible)
-import Colog.Core.Action ((&>), (>$<), LogAction (..))
+import Colog.Core.Action ((&>), LogAction (..))
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO (hPutStrLn)
@@ -22,20 +22,20 @@ import System.IO (stderr)
 -- >>> runAnsible (Config $ Inventory "localhost,") (logAnsibleStderr <& "hello world")
 -- hello world
 -- @
-logAnsibleStderr :: LogAction Ansible T.Text
-logAnsibleStderr = LogAction $ liftIO . TIO.hPutStrLn stderr
+logAnsibleStderr :: Show a => LogAction Ansible a
+logAnsibleStderr = LogAction $ liftIO . TIO.hPutStrLn stderr . T.pack . show
 
 -- | Every `LogMessage` has a time it occurred.
-data LogMessage
+data LogMessage a
   = Message
       { time :: UTCTime,
         localTime :: LocalTime,
-        message :: T.Text
+        message :: a
       }
 
 -- | Format LogMessage to `T.Text`. Displays local time.
-instance Show LogMessage where
-  show Message {localTime, message} = "[" ++ show localTime ++ "] " ++ T.unpack message
+instance Show a => Show (LogMessage a) where
+  show Message {localTime, message} = "[" ++ show localTime ++ "] " ++ show message
 
 -- | Convert `UTCTime` to `LocalTime`.
 getLocalTime :: UTCTime -> IO LocalTime
@@ -51,9 +51,10 @@ getLocalTime utcTime = do
 -- @
 logMsg ::
   -- | Log message.
-  T.Text ->
+  Show a =>
+  a ->
   Ansible ()
 logMsg message = do
   time <- liftIO getCurrentTime
   localTime <- liftIO $ getLocalTime time
-  Message {time, localTime, message} &> (T.pack . show >$< logAnsibleStderr)
+  Message {time, localTime, message} &> logAnsibleStderr
