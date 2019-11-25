@@ -19,6 +19,7 @@ import Ansible.Types
   )
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (asks, runReaderT)
+import Data.Coerce
 import qualified Data.Text as T
 import System.Environment (getEnvironment)
 import System.Process.Typed (ProcessConfig, proc, readProcessStdout, setEnv)
@@ -48,17 +49,18 @@ ansibleEnv = do
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
 ansibleProc :: Pattern -> AnsibleCmd -> Ansible (ProcessConfig () () ())
-ansibleProc ansiblePattern cmd@AnsibleCmd {ansibleModule = (Module m)} = do
-  inv <- inventoryCmdline <$> asks ansibleInventory
-  return $ proc "ansible" $
-    T.unpack <$> inv ++ ["-m", m] ++ args cmd ++ [ansiblePattern]
-  where
-    args :: AnsibleCmd -> [T.Text]
-    args (ansibleArgs -> Just a) = ["-a", a]
-    args _ = []
-    inventoryCmdline :: Inventory -> [T.Text]
-    inventoryCmdline (Inventory path) = ["-i", path]
-    inventoryCmdline Localhost = []
+ansibleProc ansiblePattern cmd@AnsibleCmd {ansibleArgs, ansibleModule} = do
+  inv <- asks ansibleInventory
+  return $ proc "ansible" . fmap T.unpack $
+    let inventory = case inv of
+          Inventory path -> ["-i", path]
+          _ -> []
+        modules = ["-m", coerce ansibleModule]
+        args = case ansibleArgs of
+          Just a -> ["-a", a]
+          _ -> []
+        target = [ansiblePattern]
+     in inventory ++ modules ++ args ++ target
 
 -- | Run `Ansible` action. An `Ansible` action needs an inventory to run against.
 runAnsible :: Config -> Ansible a -> IO a
