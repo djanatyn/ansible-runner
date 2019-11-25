@@ -1,11 +1,3 @@
--- |
--- Module      : Main
--- Description : Run Ansible adhoc commands.
---
--- This module exports functions for constructing Ansible adhoc actions, and
--- running those actions.
---
--- >>> runAnsible (Config (Inventory "~/inv/ansible-runner.yml")) (runAdhoc (shell "whoami") "all")
 module Main where
 
 import Ansible.Types (AnsibleCmd (..), Module (..))
