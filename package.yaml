@@ -7,9 +7,8 @@ dependencies:
   - text
   - bytestring
   - typed-process
-  - lens
+  - aeson
   - transformers
-  - containers
   - co-log-core
   - time
 
