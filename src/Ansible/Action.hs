@@ -24,7 +24,22 @@ import qualified Data.Text as T
 import System.Environment (getEnvironment)
 import System.Process.Typed (ProcessConfig, proc, readProcessStdout, setEnv)
 
+-- | Ansible process.
 type Process = ProcessConfig () () ()
+
+-- | Environment variable.
+type EnvVar = (String, String)
+
+-- | Process environment.
+type Environment = [EnvVar]
+
+-- | Base environment for Ansible adhoc commands.
+-- JSON stdout callback is used.
+baseEnv :: Environment
+baseEnv =
+  [ ("ANSIBLE_STDOUT_CALLBACK", "json"),
+    ("ANSIBLE_LOAD_CALLBACK_PLUGINS", "TRUE")
+  ]
 
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
 runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
@@ -34,16 +49,15 @@ runAdhoc cmd target = do
   command <- ansibleEnv process
   liftIO $ AdhocOutput . snd <$> readProcessStdout command
 
+-- | Whether to override an existing environment variable.
+overrideVar :: EnvVar -> Bool
+overrideVar var = fst var `notElem` (fst <$> baseEnv)
+
 -- | Set environment for `Ansible Process`.
 ansibleEnv :: Process -> Ansible Process
 ansibleEnv process = do
   currentEnvironment <- liftIO getEnvironment
-  let newArgs =
-        [ ("ANSIBLE_STDOUT_CALLBACK", "json"),
-          ("ANSIBLE_LOAD_CALLBACK_PLUGINS", "TRUE")
-        ]
-      currentArgs = filter ((`notElem` (fst <$> newArgs)) . fst) currentEnvironment
-   in return $ setEnv (newArgs ++ currentArgs) process
+  return $ setEnv (baseEnv ++ filter overrideVar currentEnvironment) process
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
 ansibleProc :: Pattern -> AnsibleCmd -> Ansible Process
