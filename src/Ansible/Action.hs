@@ -7,7 +7,7 @@ module Ansible.Action
   )
 where
 
-import Ansible.Log (logMsg)
+import Ansible.Log (LogLevel (..), logMsg)
 import Ansible.Types
   ( AdhocOutput (..),
     Ansible,
@@ -28,7 +28,7 @@ runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
 runAdhoc cmd target = do
   process <- ansibleProc target cmd
   env <- ansibleEnv
-  logMsg process
+  logMsg INFO process
   let action = setEnv env process
    in liftIO $ AdhocOutput . snd <$> readProcessStdout action
 
