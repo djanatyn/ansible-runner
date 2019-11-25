@@ -20,3 +20,4 @@ default-extensions:
   - OverloadedStrings
   - NamedFieldPuns
   - ViewPatterns
+  - PartialTypeSignatures
