@@ -19,18 +19,14 @@ import Data.Time.Clock (UTCTime (..), getCurrentTime)
 import Data.Time.LocalTime (LocalTime (..), getTimeZone, utcToLocalTime)
 import System.IO (stderr)
 
--- | Log inside an Ansible action:
---
--- @
--- >>> runAnsible (Config $ Inventory "localhost,") (logAnsibleStderr <& "hello world")
--- hello world
--- @
+-- | Ansible logging action.
 logAnsibleStderr :: Show a => LogAction Ansible a
 logAnsibleStderr = LogAction $ liftIO . TIO.hPutStrLn stderr . T.pack . show
 
+-- | Levels for logs.
 data LogLevel = ERROR | WARN | INFO | TRACE deriving (Show)
 
--- | Every `LogMessage` has a time it occurred.
+-- | Timestamped `LogMessage` with severity.
 data LogMessage a
   = Message
       { logTime :: UTCTime,
@@ -54,17 +50,13 @@ getLocalTime utcTime = do
   localTimeZone <- getTimeZone utcTime
   return $ utcToLocalTime localTimeZone utcTime
 
+-- | `LogMessage` smart constructor.
 message :: Show a => LogLevel -> a -> Ansible (LogMessage a)
 message logLevel logMessage = do
   logTime <- liftIO getCurrentTime
   logLocalTime <- liftIO $ getLocalTime logTime
   return Message {logTime, logLocalTime, logLevel, logMessage}
 
--- | Log inside an Ansible action:
---
--- @
--- >>> runAnsible (Config (Inventory "localhost,")) (logMsg "hello world")
--- [2019-11-14 20:22:50.224771] hello world
--- @
+-- | Exported logging interface.
 logMsg :: Show a => LogLevel -> a -> Ansible ()
 logMsg level msg = message level msg >>= (&> logAnsibleStderr)
