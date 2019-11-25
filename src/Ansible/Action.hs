@@ -27,11 +27,10 @@ import System.Process.Typed (ProcessConfig, proc, readProcessStdout, setEnv)
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
 runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
 runAdhoc cmd target = do
-  process <- ansibleProc target cmd
   env <- ansibleEnv
-  logMsg INFO process
-  let action = setEnv env process
-   in liftIO $ AdhocOutput . snd <$> readProcessStdout action
+  command <- setEnv env <$> ansibleProc target cmd
+  logMsg INFO command
+  liftIO $ AdhocOutput . snd <$> readProcessStdout command
 
 -- | Environment for an `Ansible` adhoc process.
 type Environment = [(String, String)]
