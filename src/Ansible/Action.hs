@@ -29,8 +29,9 @@ type Process = ProcessConfig () () ()
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
 runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
 runAdhoc cmd target = do
-  command <- ansibleProc target cmd >>= ansibleEnv
-  logMsg INFO command
+  process <- ansibleProc target cmd
+  logMsg WARN process
+  command <- ansibleEnv process
   liftIO $ AdhocOutput . snd <$> readProcessStdout command
 
 -- | Set environment for `Ansible Process`.

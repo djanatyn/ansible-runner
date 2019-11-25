@@ -1,6 +1,7 @@
 module Ansible.Types
   ( -- * Environment
     Ansible,
+    LogLevel (..),
     Config (..),
     Inventory (..),
 
@@ -24,8 +25,15 @@ type Pattern = T.Text
 -- | An `Inventory` is specified by a filepath.
 data Inventory = Inventory T.Text | Localhost
 
+-- | Levels for logs.
+data LogLevel = FATAL | ERROR | WARN | INFO | DEBUG deriving (Show, Eq, Ord)
+
 -- | Ansible runs against exactly one `Inventory` each invocation.
-newtype Config = Config {ansibleInventory :: Inventory}
+data Config
+  = Config
+      { ansibleInventory :: Inventory,
+        ansibleLogLevel :: LogLevel
+      }
 
 -- | Ansible action type. Captures Ansible actions running against an
 -- `Inventory`.

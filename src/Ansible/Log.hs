@@ -7,9 +7,11 @@ module Ansible.Log
   )
 where
 
-import Ansible.Types (Ansible)
+import Ansible.Types (Ansible, Config (..), LogLevel (..))
 import Colog.Core.Action ((&>), LogAction (..))
+import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Reader (asks)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO (hPutStrLn)
 import Data.Time.Clock (UTCTime (..), getCurrentTime)
@@ -19,9 +21,6 @@ import System.IO (stderr)
 -- | Ansible logging action.
 logAnsibleStderr :: Show a => LogAction Ansible a
 logAnsibleStderr = LogAction $ liftIO . TIO.hPutStrLn stderr . T.pack . show
-
--- | Levels for logs.
-data LogLevel = ERROR | WARN | INFO | TRACE deriving (Show)
 
 -- | Timestamped `LogMessage` with severity.
 data LogMessage a
@@ -56,4 +55,7 @@ message logLevel logMessage = do
 
 -- | Exported logging interface.
 logMsg :: Show a => LogLevel -> a -> Ansible ()
-logMsg level msg = message level msg >>= (&> logAnsibleStderr)
+logMsg level msg = do
+  currentLevel <- asks ansibleLogLevel
+  when (currentLevel >= level) $
+    message level msg >>= (&> logAnsibleStderr)
