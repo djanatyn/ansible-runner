@@ -49,7 +49,7 @@ ansibleEnv = do
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
 ansibleProc :: Pattern -> AnsibleCmd -> Ansible (ProcessConfig () () ())
-ansibleProc ansiblePattern cmd@AnsibleCmd {ansibleArgs, ansibleModule} = do
+ansibleProc ansiblePattern AnsibleCmd {ansibleArgs, ansibleModule} = do
   inv <- asks ansibleInventory
   return $ proc "ansible" . fmap T.unpack $
     let inventory = case inv of
