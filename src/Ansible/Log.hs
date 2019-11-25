@@ -1,8 +1,5 @@
 module Ansible.Log
-  ( -- * Types
-    LogMessage,
-
-    -- * Log Levels
+  ( -- * Log Levels
     LogLevel (..),
 
     -- * Actions
