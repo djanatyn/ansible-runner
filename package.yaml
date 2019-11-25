@@ -19,10 +19,4 @@ library:
 default-extensions:
   - OverloadedStrings
   - NamedFieldPuns
-  - InstanceSigs
-  - FlexibleInstances
-  - TypeFamilies
-  - GADTs
-  - KindSignatures
-  - DataKinds
   - ViewPatterns
