@@ -11,6 +11,7 @@ dependencies:
   - transformers
   - co-log-core
   - time
+  - unordered-containers
 
 library:
   source-dirs:
@@ -21,3 +22,5 @@ default-extensions:
   - NamedFieldPuns
   - ViewPatterns
   - PartialTypeSignatures
+  - DataKinds
+  - KindSignatures

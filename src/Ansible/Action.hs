@@ -8,9 +8,9 @@ module Ansible.Action
 where
 
 import Ansible.Log (LogLevel (..), logMsg)
+import Ansible.Parse (AdhocOutput (..))
 import Ansible.Types
-  ( AdhocOutput (..),
-    Ansible,
+  ( Ansible,
     AnsibleCmd (..),
     Config (..),
     Inventory (..),
@@ -19,10 +19,11 @@ import Ansible.Types
   )
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (asks, runReaderT)
+import Data.Aeson (decode)
 import Data.Coerce
 import qualified Data.Text as T
 import System.Environment (getEnvironment)
-import System.Process.Typed (ProcessConfig, proc, readProcessStdout, setEnv)
+import System.Process.Typed (ProcessConfig, proc, readProcess, setEnv)
 
 -- | Ansible process.
 type Process = ProcessConfig () () ()
@@ -42,12 +43,13 @@ baseEnv =
   ]
 
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
-runAdhoc :: AnsibleCmd -> Pattern -> Ansible AdhocOutput
+runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (AdhocOutput m))
 runAdhoc cmd target = do
   process <- ansibleProc target cmd
   logMsg WARN process
   command <- ansibleEnv process
-  liftIO $ AdhocOutput . snd <$> readProcessStdout command
+  (_, stdout, _) <- liftIO $ readProcess command
+  return $ decode stdout
 
 -- | Whether to override an existing environment variable.
 overrideVar :: EnvVar -> Bool
@@ -60,7 +62,7 @@ ansibleEnv process = do
   return $ setEnv (baseEnv ++ filter overrideVar currentEnvironment) process
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
-ansibleProc :: Pattern -> AnsibleCmd -> Ansible Process
+ansibleProc :: Pattern -> (AnsibleCmd m) -> Ansible Process
 ansibleProc ansiblePattern AnsibleCmd {ansibleArgs, ansibleModule} = do
   inv <- asks ansibleInventory
   return $ proc "ansible" . fmap T.unpack $
