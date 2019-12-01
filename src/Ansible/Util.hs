@@ -1,6 +1,5 @@
-module Main where
+module Ansible.Util where
 
-import Ansible.Action
 import Ansible.Types
 import Data.Text (Text)
 
@@ -19,6 +18,3 @@ shell args =
     { ansibleModule = Module "shell",
       ansibleArgs = Just args
     }
-
-main :: IO ()
-main = undefined
