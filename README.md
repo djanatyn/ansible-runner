@@ -9,15 +9,15 @@ built with:
 
 ## usage
 ``` haskell
->>> :t runAdhoc (shell "uname -a") "localhost"
-runAdhoc (shell "uname -a") "localhost" :: Ansible AdhocOutput
->>> :t adhocOutput <$> runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
-adhocOutput <$> runAnsible (Config Localhost) (runAdhoc (shell "uname -a") "localhost")
-  :: IO BL.ByteString
+>>> :t runAdhoc (shell "whoami") "localhost"
+runAdhoc (shell "whoami") "localhost"
+  :: Ansible (Maybe (AdhocOutput "shell"))
+>>> :t runAnsible (Config Localhost WARN) (runAdhoc (shell "whoami") "localhost")
+runAnsible (Config Localhost WARN) (runAdhoc (shell "whoami") "localhost")
+  :: IO (Maybe (AdhocOutput "shell"))
 ```
 
 ## todo
-* parse adhoc output with Aeson
 * support `--extra-vars=EXTRA_VARS` flag
 * support `--limit=SUBSET` flag
 * support `--become` flag
