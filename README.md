@@ -16,12 +16,15 @@ Built with:
 >>> :t runAdhoc (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
 runAdhoc (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
   :: Pattern -> Ansible (Maybe (Results m))
+
 -- | Using utility functions to construct well-typed Ansible actions
 >>> :t runShell "uname -a"
 runShell "uname -a" :: Pattern -> Ansible (Maybe ShellStdout)
+
 -- | Run Ansible commands against localhost with "WARN" logging level
 >>> :t runAnsible (Config Localhost WARN)
 runAnsible (Config Localhost WARN) :: Ansible a -> IO a
+
 -- | Run "uname -a" locally and return the result
 >>> :t runAnsible (Config Localhost WARN) (runShell "uname -a" "localhost")
 runAnsible (Config Localhost WARN) (runShell "uname -a" "localhost")
