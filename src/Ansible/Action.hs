@@ -8,7 +8,6 @@ module Ansible.Action
 where
 
 import Ansible.Log (LogLevel (..), logMsg)
-import Ansible.Parse (AdhocOutput (..))
 import Ansible.Types
   ( Ansible,
     AnsibleCmd (..),
@@ -16,6 +15,7 @@ import Ansible.Types
     Inventory (..),
     Module (..),
     Pattern,
+    Results,
   )
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Reader (asks, runReaderT)
@@ -43,7 +43,7 @@ baseEnv =
   ]
 
 -- | Run an adhoc `AnsibleCmd` given a host pattern.
-runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (AdhocOutput m))
+runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (Results m))
 runAdhoc cmd target = do
   process <- ansibleProc target cmd
   logMsg WARN process
@@ -62,7 +62,7 @@ ansibleEnv process = do
   return $ setEnv (baseEnv ++ filter overrideVar currentEnvironment) process
 
 -- | Construct `ProcessConfig` for Ansible adhoc command.
-ansibleProc :: Pattern -> (AnsibleCmd m) -> Ansible Process
+ansibleProc :: Pattern -> AnsibleCmd m -> Ansible Process
 ansibleProc ansiblePattern AnsibleCmd {ansibleArgs, ansibleModule} = do
   inv <- asks ansibleInventory
   return $ proc "ansible" . fmap T.unpack $
