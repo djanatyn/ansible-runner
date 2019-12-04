@@ -51,8 +51,8 @@ Just (Results {resultPlays = [Play {playID = "54ee7548-ebd7-970f-8d23-0000000000
 Just (ShellStdout [("localhost",Just "Linux nixos 4.19.79 #1-NixOS SMP Fri Oct 11 16:21:44 UTC 2019 x86_64 GNU/Linux")])
 ```
 
-## extend ansible-runner to support arbitrary modules
-
+## Extending ansible-runner to support arbitrary modules
+### Types for Specific Modules
 While the `ansible` command returns consistently structured JSON for tasks and
 plays, different Ansible *modules* provide different JSON structures.
 
@@ -69,6 +69,7 @@ newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
 However, it should only be possible to construct a `ShellStdout` value from
 "shell" module invocations.
 
+### Module Phantom Types
 To accomplish this, a type-level `Symbol` phantom type parameter represents the
 name of the Ansible module invoked in the `AnsibleCmd` and `Results` types:
 ``` haskell
@@ -93,6 +94,7 @@ runAdhoc @"shell"
      -> Pattern -> Ansible (Maybe (Results "shell"))
 ```
 
+### Parsing (Only) "shell" Module Invocations
 The `Results` type parameter can be used to parse the "stdout" JSON field for
 *shell module invocations only*, with the help of the GHC `FlexibleInstances`
 extension: 
