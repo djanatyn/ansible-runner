@@ -18,10 +18,10 @@ newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
 class Shell a where
   shellOutput :: a -> ShellStdout
 
-shell :: Value -> A.Parser T.Text
-shell = withObject "result" (.: "stdout")
+shellStdout :: Value -> A.Parser T.Text
+shellStdout = withObject "result" (.: "stdout")
 
 instance Shell (Results "shell") where
   shellOutput output =
     coerce $
-      second (A.parseMaybe shell) <$> adhocResults output
+      second (A.parseMaybe shellStdout) <$> adhocResults output

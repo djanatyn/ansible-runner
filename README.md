@@ -53,8 +53,11 @@ Just (ShellStdout [("localhost",Just "Linux nixos 4.19.79 #1-NixOS SMP Fri Oct 1
 
 ## extend ansible-runner to support arbitrary modules
 
-Different Ansible modules provide different JSON structures. `runAdhoc` provides
-an Aeson `Value` for each `Host` in a `Task`.
+While the `ansible` command returns consistently structured JSON for tasks and
+plays, different Ansible *modules* provide different JSON structures.
+
+To allow running any module, `runAdhoc` returns an Aeson `Value` for each `Host`
+in a `Task` via the `Results` type.
 
 To facilitate different Aeson instances for each module, there is a phantom type
 parameter in the `Results` type:
@@ -65,22 +68,39 @@ newtype Results (m :: ghc-prim-0.5.3:GHC.Types.Symbol)
   = Results {resultPlays :: [Ansible.Types.Play]}
 ```
 
-We can use this type parameter to define a more precise Aeson instance
-for a specific Ansible module with a new typeclass and `Results` instance:
+The module name is represented by this type-level `Symbol`. When using
+`runAdhoc`, the parameter in `AnsibleCmd` and `Results` must match:
+
+``` haskell
+>>> :t runAdhoc
+runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (Results m))
+>>> :t runAdhoc @"shell"
+runAdhoc @"shell"
+  :: AnsibleCmd "shell"
+     -> Pattern -> Ansible (Maybe (Results "shell"))
+```
+
+Parsing an Aeson `Value` from every `Results` value is very inconvenient! A more
+structured type is preferred:
 ``` haskell
 newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
   deriving (Show)
+```
 
+The `Results` type parameter can be used to parse the "stdout" JSON field for
+*shell module invocations only*, with the help of the GHC `FlexibleInstances`
+extension: 
+``` haskell
 class Shell a where
   shellOutput :: a -> ShellStdout
 
-shell :: Value -> A.Parser T.Text
-shell = withObject "result" (.: "stdout")
+shellOutput :: Value -> A.Parser T.Text
+shellOutput = withObject "result" (.: "stdout")
 
 instance Shell (Results "shell") where
   shellOutput output =
     coerce $
-      second (A.parseMaybe shell) <$> adhocResults output
+      second (A.parseMaybe shellOutput) <$> adhocResults output
 ```
 
 ## todo
