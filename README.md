@@ -12,10 +12,15 @@ Built with:
 
 ## usage
 ``` haskell
--- | Manually consturcting Ansible actions
+-- | Manually constructing Ansible actions
 >>> :t runAdhoc (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
 runAdhoc (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
   :: Pattern -> Ansible (Maybe (Results m))
+
+-- | Phantom types for module/output information (using TypeApplications)
+>>> :t runAdhoc @"shell" (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
+runAdhoc @"shell" (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
+  :: Pattern -> Ansible (Maybe (Results "shell"))
 
 -- | Using utility functions to construct well-typed Ansible actions
 >>> :t runShell "uname -a"
