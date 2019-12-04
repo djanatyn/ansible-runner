@@ -10,7 +10,7 @@ Built with:
 * [aeson](http://hackage.haskell.org/package/aeson)
 * [colog-core](http://hackage.haskell.org/package/co-log-core)
 
-## constructing Ansible actions
+## Constructing Ansible Actions
 ``` haskell
 -- | Manually constructing Ansible actions
 >>> :t runAdhoc (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" })
@@ -36,7 +36,7 @@ runAnsible (Config Localhost WARN) (runShell "uname -a" "localhost")
   :: IO (Maybe ShellStdout)
 ```
 
-## running Ansible actions
+## Running Ansible Actions
 ``` haskell
 -- | Raw JSON output
 >>> runAnsible (Config Localhost WARN) (runAdhoc @"shell" (AnsibleCmd { ansibleModule = (Module "shell"), ansibleArgs = Just "uname -a" }) "localhost")
@@ -51,7 +51,7 @@ Just (Results {resultPlays = [Play {playID = "54ee7548-ebd7-970f-8d23-0000000000
 Just (ShellStdout [("localhost",Just "Linux nixos 4.19.79 #1-NixOS SMP Fri Oct 11 16:21:44 UTC 2019 x86_64 GNU/Linux")])
 ```
 
-## Extending ansible-runner to support arbitrary modules
+## Extending ansible-runner
 ### Types for Specific Modules
 While the `ansible` command returns consistently structured JSON for tasks and
 plays, different Ansible *modules* provide different JSON structures.
