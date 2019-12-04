@@ -60,7 +60,7 @@ To allow running any module, `runAdhoc` returns an Aeson `Value` for each `Host`
 in a `Task` via the `Results` type.
 
 Parsing an Aeson `Value` from every `Results` value is very inconvenient! A more
-structured type for fetching the "shell" module's stdout (for example) is preferred:
+precise type for fetching the "shell" module's stdout (for example) is preferred:
 ``` haskell
 newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
   deriving (Show)
