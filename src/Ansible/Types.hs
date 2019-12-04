@@ -58,6 +58,7 @@ data AnsibleCmd (m :: Symbol)
         -- | Optional arguments to module.
         ansibleArgs :: Maybe T.Text
       }
+  deriving (Show)
 
 newtype Results (m :: Symbol)
   = Results
