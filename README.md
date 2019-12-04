@@ -104,7 +104,6 @@ instance Shell (Results "shell") where
 ```
 
 ## todo
-* lens for `shell` module output
 * support `--extra-vars=EXTRA_VARS` flag
 * support `--limit=SUBSET` flag
 * support `--become` flag
