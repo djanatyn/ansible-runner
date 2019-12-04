@@ -59,18 +59,31 @@ plays, different Ansible *modules* provide different JSON structures.
 To allow running any module, `runAdhoc` returns an Aeson `Value` for each `Host`
 in a `Task` via the `Results` type.
 
-To facilitate different Aeson instances for each module, there is a phantom type
-parameter in the `Results` type:
+Parsing an Aeson `Value` from every `Results` value is very inconvenient! A more
+structured type for fetching the "shell" module's stdout (for example) is preferred:
 ``` haskell
+newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
+  deriving (Show)
+```
+
+However, it should only be possible to construct a `ShellStdout` value from
+"shell" module invocations.
+
+To accomplish this, a type-level `Symbol` phantom type parameter represents the
+name of the Ansible module invoked in the `AnsibleCmd` and `Results` types:
+``` haskell
+>>> :info AnsibleCmd
+type role AnsibleCmd phantom
+data AnsibleCmd (m :: ghc-prim-0.5.3:GHC.Types.Symbol)
+  = AnsibleCmd {ansibleModule :: Module m, ansibleArgs :: Maybe Text}
+...
 >>> :info Results
 type role Results phantom
 newtype Results (m :: ghc-prim-0.5.3:GHC.Types.Symbol)
   = Results {resultPlays :: [Ansible.Types.Play]}
 ```
 
-The module name is represented by this type-level `Symbol`. When using
-`runAdhoc`, the parameter in `AnsibleCmd` and `Results` must match:
-
+When using `runAdhoc`, the parameter in `AnsibleCmd` and `Results` must match:
 ``` haskell
 >>> :t runAdhoc
 runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (Results m))
@@ -78,13 +91,6 @@ runAdhoc :: AnsibleCmd m -> Pattern -> Ansible (Maybe (Results m))
 runAdhoc @"shell"
   :: AnsibleCmd "shell"
      -> Pattern -> Ansible (Maybe (Results "shell"))
-```
-
-Parsing an Aeson `Value` from every `Results` value is very inconvenient! A more
-structured type is preferred:
-``` haskell
-newtype ShellStdout = ShellStdout [(Host, Maybe T.Text)]
-  deriving (Show)
 ```
 
 The `Results` type parameter can be used to parse the "stdout" JSON field for
